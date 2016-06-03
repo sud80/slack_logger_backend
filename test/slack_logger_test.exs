@@ -17,14 +17,24 @@ defmodule SlackLoggerTest do
       assert "POST" == conn.method
       Plug.Conn.resp(conn, 200, "ok")
     end
+
     Logger.error "This error should be logged to Slack"
-    :timer.sleep(200) # this is terrible but i need to wait for bypass
+    Logger.flush
   end
 
-  test "doesn't post a debug message to Slack if the level is not set" do
+  test "doesn't post a debug message to Slack if the level is not set", %{bypass: bypass} do
     Application.put_env :slack_logger_backend, :levels, [:info]
+    on_exit fn ->
+      Application.put_env :slack_logger_backend, :levels, [:debug, :info, :warn, :error]
+    end
+
+    Bypass.expect bypass, fn _conn ->
+      flunk "Slack should not have been notified"
+    end
+    Bypass.pass(bypass)
+
     Logger.error "This error should not be logged to Slack"
-    :timer.sleep(200) # this is terrible but i need to wait for bypass
+    Logger.flush
   end
 
 end
