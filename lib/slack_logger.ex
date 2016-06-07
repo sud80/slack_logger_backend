@@ -29,6 +29,7 @@ defmodule SlackLogger do
     end
     if level in levels do
       handle_event(level, message, detail)
+    else
     end
     {:ok, state}
   end
@@ -47,21 +48,35 @@ defmodule SlackLogger do
     end
   end
 
-  defp handle_event(level, message, [pid: _source_pid, module: module, function: function, file: file, line: line]) do
-    Logger.debug "Sending #{level} level event to Slack: #{message}"
-    {:ok, json} = Poison.encode(%{text: """
+  defp handle_event(level, message, [pid: _, application: application, module: module, function: function, file: file, line: line]) do
+    Poison.encode(%{text: """
+      An event has occurred: _#{message}_
+      *Level*: #{level}
+      *Application*: #{application}
+      *Module*: #{module}
+      *Function*: #{function}
+      *File*: #{file}
+      *Line*: #{line}
+      """}) |> send_event
+  end
+
+  defp handle_event(level, message, [pid: _, module: module, function: function, file: file, line: line]) do
+    Poison.encode(%{text: """
       An event has occurred: _#{message}_
       *Level*: #{level}
       *Module*: #{module}
       *Function*: #{function}
       *File*: #{file}
       *Line*: #{line}
-      """})
-    get_url |> HTTPoison.post(json)
+      """}) |> send_event
   end
 
   defp handle_event(_, _, _) do
     :noop
+  end
+
+  defp send_event({:ok, json}) do
+    get_url |> HTTPoison.post(json)
   end
 
 end
