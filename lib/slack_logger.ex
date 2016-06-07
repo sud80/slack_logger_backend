@@ -1,4 +1,5 @@
 defmodule SlackLogger do
+  require Logger
 
   @moduledoc """
   Does the actual work of posting to Slack.
@@ -47,6 +48,7 @@ defmodule SlackLogger do
   end
 
   defp handle_event(level, message, [pid: _source_pid, module: module, function: function, file: file, line: line]) do
+    Logger.debug "Sending #{level} level event to Slack: #{message}"
     {:ok, json} = Poison.encode(%{text: """
       An event has occurred: _#{message}_
       *Level*: #{level}

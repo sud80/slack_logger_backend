@@ -24,14 +24,14 @@ defmodule SlackLoggerBackend.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.8"},
-      {:poison, "~> 2.1"},
+      {:poison, "~> 1.3"},
       {:excoveralls, "~> 0.4", only: :test},
       {:earmark, "~> 0.2", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
-      {:credo, "~> 0.2", only: :dev},
+      {:credo, "~> 0.4", only: :docs},
       {:bypass, "~> 0.1", only: :test},
-      {:inch_ex, only: :docs}
+      {:inch_ex, "~> 0.5", only: :docs}
     ]
   end
 
