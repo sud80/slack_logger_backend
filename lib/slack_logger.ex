@@ -34,6 +34,10 @@ defmodule SlackLogger do
     {:ok, state}
   end
 
+  def handle_event(:flush, state) do
+    {:ok, state}
+  end
+
   @doc false
   def handle_info(_message, state) do
     {:ok, state}
