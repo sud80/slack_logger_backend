@@ -1,4 +1,4 @@
 use Mix.Config
 
-config :slack_logger_backend, :levels, [:debug, :info, :warn, :error]
-config :slack_logger_backend, :slack, [url: "http://example.com"]
+config SlackLogger, :levels, [:debug, :info, :warn, :error]
+config SlackLogger, :slack, [url: "http://example.com"]

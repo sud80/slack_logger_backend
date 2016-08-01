@@ -1,8 +1,50 @@
 defmodule SlackLogger do
-  require Logger
 
   @moduledoc """
-  Does the actual work of posting to Slack.
+  A logger backend for posting errors to Slack.
+
+  You can find the hex package [here](https://hex.pm/packages/slack_logger_backend), and the docs [here](http://hexdocs.pm/slack_logger_backend).
+
+  ## Usage
+
+  First, add the client to your `mix.exs` dependencies:
+
+  ```elixir
+  def deps do
+    [{:slack_logger_backend, "~> 0.0.1"}]
+  end
+  ```
+
+  Then run `$ mix do deps.get, compile` to download and compile your dependencies.
+
+  Finally, add `SlackLogger` to your list of logging backends in your app's config:
+
+  ```elixir
+  config :logger, backends: [SlackLogger, :console]
+  ```
+
+  You can set the log levels you want posted to slack in the config:
+
+  ```elixir
+  config SlackLogger, :levels, [:debug, :info, :warn, :error]
+  ```
+
+  Alternatively, do both in one step:
+
+  ```elixir
+  config :logger, backends: [{SlackLogger, :error}]
+  config :logger, backends: [{SlackLogger, [:info, error]}]
+  ```
+
+  You'll need to create a custom incoming webhook URL for your Slack team. You can either configure the webhook
+  in your config:
+
+  ```elixir
+  config SlackLogger, :slack, [url: "http://example.com"]
+  ```
+
+  ... or you can put the webhook URL in the `SLACK_LOGGER_WEBHOOK_URL` environment variable if you prefer. If
+  you have both the environment variable will be preferred.
   """
 
   use GenEvent
@@ -11,7 +53,15 @@ defmodule SlackLogger do
 
   @doc false
   def init(__MODULE__) do
-    {:ok, %{}}
+    {:ok, %{levels: []}}
+  end
+
+  def init({__MODULE__, levels}) when is_atom(levels) do
+    {:ok, %{levels: [levels]}}
+  end
+
+  def init({__MODULE__, levels}) when is_list(levels) do
+    {:ok, %{levels: levels}}
   end
 
   @doc false
@@ -19,9 +69,8 @@ defmodule SlackLogger do
     {:ok, state}
   end
 
-  @doc false
-  def handle_event({level, _pid, {Logger, message, _timestamp, detail}}, state) do
-    levels = case Application.get_env(:slack_logger_backend, :levels) do
+  def handle_event({level, _pid, {_, message, _timestamp, detail}}, %{levels: []} = state) do
+    levels = case Application.get_env(SlackLogger, :levels) do
       nil ->
         [:error] # by default only log error level messages
       levels ->
@@ -29,7 +78,14 @@ defmodule SlackLogger do
     end
     if level in levels do
       handle_event(level, message, detail)
-    else
+    end
+    {:ok, %{state | levels: levels}}
+  end
+
+  @doc false
+  def handle_event({level, _pid, {_, message, _timestamp, detail}}, %{levels: levels} = state) do
+    if level in levels do
+      handle_event(level, message, detail)
     end
     {:ok, state}
   end
@@ -46,7 +102,7 @@ defmodule SlackLogger do
   defp get_url do
     case System.get_env(@env_webhook) do
       nil ->
-        Application.get_env(:slack_logger_backend, :slack)[:url]
+        Application.get_env(SlackLogger, :slack)[:url]
       url ->
         url
     end
