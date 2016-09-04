@@ -109,26 +109,67 @@ defmodule SlackLogger do
   end
 
   defp handle_event(level, message, [pid: _, application: application, module: module, function: function, file: file, line: line]) do
-    Poison.encode(%{text: """
-      An event has occurred: _#{message}_
-      *Level*: #{level}
-      *Application*: #{application}
-      *Module*: #{module}
-      *Function*: #{function}
-      *File*: #{file}
-      *Line*: #{line}
-      """}) |> send_event
+    %{ attachments: [%{
+          fallback: "An #{level} level event has occurred: #{message}",
+          pretext: message,
+          fields: [%{
+            title: "Level",
+            value: level,
+            short: true
+          }, %{
+            title: "Application",
+            value: application,
+            short: true
+          }, %{
+            title: "Module",
+            value: module,
+            short: true
+          }, %{
+            title: "Function",
+            value: function,
+            short: true
+          }, %{
+            title: "File",
+            value: file,
+            short: true
+          }, %{
+            title: "Line",
+            value: line,
+            short: true
+          }]
+      }]}
+    |> Poison.encode
+    |> send_event
   end
 
   defp handle_event(level, message, [pid: _, module: module, function: function, file: file, line: line]) do
-    Poison.encode(%{text: """
-      An event has occurred: _#{message}_
-      *Level*: #{level}
-      *Module*: #{module}
-      *Function*: #{function}
-      *File*: #{file}
-      *Line*: #{line}
-      """}) |> send_event
+    %{ attachments: [%{
+          fallback: "An #{level} level event has occurred: #{message}",
+          pretext: message,
+          fields: [%{
+            title: "Level",
+            value: level,
+            short: true
+          }, %{
+            title: "Module",
+            value: module,
+            short: true
+          }, %{
+            title: "Function",
+            value: function,
+            short: true
+          }, %{
+            title: "File",
+            value: file,
+            short: true
+          }, %{
+            title: "Line",
+            value: line,
+            short: true
+          }]
+      }]}
+    |> Poison.encode
+    |> send_event
   end
 
   defp handle_event(_, _, _) do
