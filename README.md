@@ -22,30 +22,30 @@ end
 
 Then run `$ mix do deps.get, compile` to download and compile your dependencies.
 
-Finally, add `SlackLogger` to your list of logging backends in your app's config:
+Finally, add `SlackLoggerBackend` to your list of logging backends in your app's config:
 
 ```elixir
-config :logger, backends: [SlackLogger, :console]
+config :logger, backends: [SlackLoggerBackend, :console]
 ```
 
 You can set the log levels you want posted to slack in the config:
 
 ```elixir
-config SlackLogger, :levels, [:debug, :info, :warn, :error]
+config SlackLoggerBackend, :levels, [:debug, :info, :warn, :error]
 ```
 
 Alternatively, do both in one step: 
 
 ```elixir
-config :logger, backends: [{SlackLogger, :error}]
-config :logger, backends: [{SlackLogger, [:info, error]}]
+config :logger, backends: [{SlackLoggerBackend, :error}]
+config :logger, backends: [{SlackLoggerBackend, [:info, error]}]
 ```
 
 You'll need to create a custom incoming webhook URL for your Slack team. You can either configure the webhook
 in your config:
 
 ```elixir
-config SlackLogger, :slack, [url: "http://example.com"]
+config SlackLoggerBackend, :slack, [url: "http://example.com"]
 ```
 
 ... or you can put the webhook URL in the `SLACK_LOGGER_WEBHOOK_URL` environment variable if you prefer. If

@@ -1,16 +1,19 @@
 ExUnit.start
 
-defmodule SlackLoggerTest do
+defmodule SlackLoggerBackendTest do
   use ExUnit.Case
   require Logger
 
   setup do
     bypass = Bypass.open
-    Application.put_env SlackLogger, :slack, [url: "http://localhost:#{bypass.port}/hook"]
-    System.put_env "SLACK_LOGGER_WEBHOOK_URL", "http://localhost:#{bypass.port}/hook"
-    {:ok, _} = Logger.add_backend(SlackLogger, flush: true)
+    url = "http://localhost:#{bypass.port}/hook"
+    Application.put_env SlackLoggerBackend, :slack, [url: url]
+    System.put_env "SLACK_LOGGER_WEBHOOK_URL", url
+    {:ok, _} = Logger.add_backend(SlackLoggerBackend.Logger, flush: true)
+    SlackLoggerBackend.start(nil, nil)
     on_exit fn ->
-      Logger.remove_backend(SlackLogger, flush: true)
+      Logger.remove_backend(SlackLoggerBackend.Logger, flush: true)
+      SlackLoggerBackend.stop(nil)
     end
     {:ok, %{bypass: bypass}}
   end
@@ -24,12 +27,13 @@ defmodule SlackLoggerTest do
 
     Logger.error "This error should be logged to Slack"
     Logger.flush
+    :timer.sleep(100)
   end
 
   test "doesn't post a debug message to Slack if the level is not set", %{bypass: bypass} do
-    Application.put_env SlackLogger, :levels, [:info]
+    Application.put_env SlackLoggerBackend, :levels, [:info]
     on_exit fn ->
-      Application.put_env SlackLogger, :levels, [:debug, :info, :warn, :error]
+      Application.put_env SlackLoggerBackend, :levels, [:debug, :info, :warn, :error]
     end
 
     Bypass.expect bypass, fn _conn ->
@@ -39,6 +43,7 @@ defmodule SlackLoggerTest do
 
     Logger.error "This error should not be logged to Slack"
     Logger.flush
+    :timer.sleep(100)
   end
 
 end
