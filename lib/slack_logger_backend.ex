@@ -62,7 +62,7 @@ defmodule SlackLoggerBackend do
       worker(Producer, []),
       worker(ProducerConsumer, []),
       worker(Consumer, [1000]),
-      worker(Pool, [])
+      worker(Pool, [20])
     ]
     opts = [strategy: :one_for_one, name: SlackLoggerBackend.Supervisor]
     Supervisor.start_link(children, opts)

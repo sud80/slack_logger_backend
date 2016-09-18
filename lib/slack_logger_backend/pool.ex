@@ -6,10 +6,8 @@ defmodule SlackLoggerBackend.Pool do
 
   alias SlackLoggerBackend.PoolWorker
 
-  @default_pool_size 20
-
   @doc false
-  def start_link do
+  def start_link(pool_size) do
     poolboy_config = [
       {:name, {:local, :message_pool}},
       {:worker_module, PoolWorker},
@@ -40,10 +38,6 @@ defmodule SlackLoggerBackend.Pool do
         PoolWorker.post(pid, url, json)
       end,
       :infinity)
-  end
-
-  def pool_size do
-    @default_pool_size
   end
 
 end

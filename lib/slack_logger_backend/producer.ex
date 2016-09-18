@@ -37,7 +37,7 @@ defmodule SlackLoggerBackend.Producer do
   defp dispatch_events(queue, demand, events) when demand > 0 do
     case :queue.out(queue) do
       {:empty, queue} ->
-        dispatch_events(queue, demand - 1, [])
+        dispatch_events(queue, demand - 1, events)
       {{:value, event}, queue} ->
         dispatch_events(queue, demand - 1, [event|events])
     end

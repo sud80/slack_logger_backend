@@ -26,9 +26,7 @@ defmodule SlackLoggerBackend.Consumer do
 
   @doc false
   def handle_events(events, _from, interval) do
-    events
-    |> Enum.filter(fn evt -> evt != :empty end)
-    |> process_events(interval)
+    process_events(events, interval)
   end
 
   defp process_events([], interval) do
