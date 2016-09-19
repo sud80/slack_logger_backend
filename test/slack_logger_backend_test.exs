@@ -10,6 +10,7 @@ defmodule SlackLoggerBackendTest do
     Application.put_env SlackLoggerBackend, :slack, [url: url]
     System.put_env "SLACK_LOGGER_WEBHOOK_URL", url
     {:ok, _} = Logger.add_backend(SlackLoggerBackend.Logger, flush: true)
+    Application.put_env SlackLoggerBackend, :levels, [:debug, :info, :warn, :error]
     SlackLoggerBackend.start(nil, nil)
     on_exit fn ->
       Logger.remove_backend(SlackLoggerBackend.Logger, flush: true)
@@ -19,6 +20,10 @@ defmodule SlackLoggerBackendTest do
   end
 
   test "posts the error to the Slack incoming webhook", %{bypass: bypass} do
+    Application.put_env SlackLoggerBackend, :levels, [:error]
+    on_exit fn ->
+      Application.put_env SlackLoggerBackend, :levels, [:debug, :info, :warn, :error]
+    end
     Bypass.expect bypass, fn conn ->
       assert "/hook" == conn.request_path
       assert "POST" == conn.method

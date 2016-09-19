@@ -32,12 +32,9 @@ defmodule SlackLoggerBackend.Pool do
   """
   @spec post(String.t, String.t) :: atom
   def post(url, json) do
-    :poolboy.transaction(
-      :message_pool,
-      fn pid ->
+    :poolboy.transaction(:message_pool, fn pid ->
         PoolWorker.post(pid, url, json)
-      end,
-      :infinity)
+    end, :infinity)
   end
 
 end

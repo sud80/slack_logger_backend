@@ -20,8 +20,8 @@ defmodule SlackLoggerBackend do
   Then run `$ mix do deps.get, compile` to download and compile your
   dependencies.
 
-  Finally, add `SlackLoggerBackend.Logger` to your list of logging backends in your
-  app's config:
+  Finally, add `SlackLoggerBackend.Logger` to your list of logging backends in
+  your app's config:
 
   ```elixir
   config :logger, backends: [SlackLoggerBackend.Logger, :console]
@@ -59,9 +59,6 @@ defmodule SlackLoggerBackend do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
     children = [
-      worker(Producer, []),
-      worker(ProducerConsumer, []),
-      worker(Consumer, [1000]),
       worker(Pool, [20])
     ]
     opts = [strategy: :one_for_one, name: SlackLoggerBackend.Supervisor]

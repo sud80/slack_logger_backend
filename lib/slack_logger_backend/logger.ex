@@ -5,9 +5,11 @@ defmodule SlackLoggerBackend.Logger do
   """
 
   use GenEvent
-  alias SlackLoggerBackend.Producer
+  alias SlackLoggerBackend.{Formatter, Pool}
+  import Formatter, only: [format_event: 1]
 
   @env_webhook "SLACK_LOGGER_WEBHOOK_URL"
+  @default_log_levels [:error]
 
   @doc false
   def init(__MODULE__) do
@@ -27,15 +29,16 @@ defmodule SlackLoggerBackend.Logger do
     {:ok, state}
   end
 
-  def handle_event({level, _pid, {_, message, _timestamp, detail}}, %{levels: [], url: url} = state) do
+  @doc false
+  def handle_event({level, _pid, {_, message, _timestamp, detail}}, %{levels: []} = state) do
     levels = case Application.get_env(SlackLoggerBackend, :levels) do
       nil ->
-        [:error] # by default only log error level messages
+        @default_log_levels
       levels ->
         levels
     end
     if level in levels do
-      handle_event(url, level, message, detail)
+      handle_event(level, message, detail)
     end
     {:ok, %{state | levels: levels}}
   end
@@ -69,11 +72,13 @@ defmodule SlackLoggerBackend.Logger do
 
   defp handle_event(level, message, [pid: _, application: application, module: module, function: function, file: file, line: line]) do
     {level, message, application, module, function, file, line}
+    |> format_event
     |> send_event
   end
 
   defp handle_event(level, message, [pid: _, module: module, function: function, file: file, line: line]) do
     {level, message, module, function, file, line}
+    |> format_event
     |> send_event
   end
 
@@ -81,8 +86,12 @@ defmodule SlackLoggerBackend.Logger do
     :noop
   end
 
+  defp handle_event(_, _, _) do
+    :noop
+  end
+
   defp send_event(event) do
-    Producer.add_event({get_url, event})
+    Pool.post(get_url, event)
   end
 
 end
