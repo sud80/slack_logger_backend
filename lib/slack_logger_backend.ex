@@ -53,7 +53,7 @@ defmodule SlackLoggerBackend do
   """
 
   use Application
-  alias SlackLoggerBackend.{Producer, ProducerConsumer, Consumer, Pool}
+  alias SlackLoggerBackend.Pool
 
   @doc false
   def start(_type, _args) do
