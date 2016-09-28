@@ -1,79 +1,36 @@
+alias Experimental.GenStage
+
 defmodule SlackLoggerBackend.Formatter do
 
   @moduledoc """
-  Simple formatter for Slack messages.
+  Formats log events into pretty Slack messages.
   """
 
-  import Poison, only: [encode: 1]
+  use GenStage
+  alias SlackLoggerBackend.{Producer, FormatHelper}
 
-  @doc """
-  Formats a log event for Slack.
-  """
-  def format_event({level, message, module, function, file, line}) do
-    {:ok, event} = %{attachments: [%{
-          fallback: "An #{level} level event has occurred: #{message}",
-          pretext: message,
-          fields: [%{
-            title: "Level",
-            value: level,
-            short: true
-          }, %{
-            title: "Module",
-            value: module,
-            short: true
-          }, %{
-            title: "Function",
-            value: function,
-            short: true
-          }, %{
-            title: "File",
-            value: file,
-            short: true
-          }, %{
-            title: "Line",
-            value: line,
-            short: true
-          }]
-      }]}
-      |> encode
-    event
+  @doc false
+  def start_link(max_demand, min_demand) do
+    GenStage.start_link(__MODULE__, {max_demand, min_demand}, name: __MODULE__)
+  end
+
+  @doc false
+  def init({max_demand, min_demand}) do
+    {:producer_consumer, %{},
+     subscribe_to: [{Producer, max_demand: max_demand, min_demand: min_demand}]}
+  end
+
+  @doc false
+  def handle_events(events, _from, state) do
+    events = Enum.map(events, &format_event/1)
+    {:noreply, events, state}
   end
 
   @doc """
   Formats a log event for Slack.
   """
-  def format_event({level, message, application, module, function, file, line}) do
-    {:ok, event} = %{attachments: [%{
-          fallback: "An #{level} level event has occurred: #{message}",
-          pretext: message,
-          fields: [%{
-            title: "Level",
-            value: level,
-            short: true
-          }, %{
-            title: "Application",
-            value: application,
-            short: true
-          }, %{
-            title: "Module",
-            value: module,
-            short: true
-          }, %{
-            title: "Function",
-            value: function,
-            short: true
-          }, %{
-            title: "File",
-            value: file,
-            short: true
-          }, %{
-            title: "Line",
-            value: line,
-            short: true
-          }]
-      }]}
-      |> encode
-    event
+  def format_event({url, event}) do
+    {url, FormatHelper.format_event(event)}
   end
 
 end

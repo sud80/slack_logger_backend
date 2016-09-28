@@ -53,13 +53,16 @@ defmodule SlackLoggerBackend do
   """
 
   use Application
-  alias SlackLoggerBackend.Pool
+  alias SlackLoggerBackend.{Pool, Formatter, Producer, Consumer}
 
   @doc false
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
     children = [
-      worker(Pool, [20])
+      worker(Producer, []),
+      worker(Formatter, [10, 5]),
+      worker(Consumer, [10, 5]),
+      worker(Pool, [10])
     ]
     opts = [strategy: :one_for_one, name: SlackLoggerBackend.Supervisor]
     Supervisor.start_link(children, opts)

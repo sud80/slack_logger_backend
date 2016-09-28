@@ -5,8 +5,7 @@ defmodule SlackLoggerBackend.Logger do
   """
 
   use GenEvent
-  alias SlackLoggerBackend.{Formatter, Pool}
-  import Formatter, only: [format_event: 1]
+  alias SlackLoggerBackend.Producer
 
   @env_webhook "SLACK_LOGGER_WEBHOOK_URL"
   @default_log_levels [:error]
@@ -72,18 +71,12 @@ defmodule SlackLoggerBackend.Logger do
 
   defp handle_event(level, message, [pid: _, application: application, module: module, function: function, file: file, line: line]) do
     {level, message, application, module, function, file, line}
-    |> format_event
     |> send_event
   end
 
   defp handle_event(level, message, [pid: _, module: module, function: function, file: file, line: line]) do
     {level, message, module, function, file, line}
-    |> format_event
     |> send_event
-  end
-
-  defp handle_event(_, _, _, _) do
-    :noop
   end
 
   defp handle_event(_, _, _) do
@@ -91,7 +84,7 @@ defmodule SlackLoggerBackend.Logger do
   end
 
   defp send_event(event) do
-    Pool.post(get_url, event)
+    Producer.add_event({get_url, event})
   end
 
 end
