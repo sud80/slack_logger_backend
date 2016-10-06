@@ -22,6 +22,14 @@ end
 
 Then run `$ mix do deps.get, compile` to download and compile your dependencies.
 
+Add the `:slack_logger_backend` application as your list of applications in `mix.exs`:
+
+```elixir
+def application do
+  [applications: [:logger, :slack_logger_backend]]
+end
+```
+
 Finally, add `SlackLoggerBackend.Logger` to your list of logging backends in your app's config:
 
 ```elixir
