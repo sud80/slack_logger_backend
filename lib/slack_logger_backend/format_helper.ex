@@ -10,7 +10,6 @@ defmodule SlackLoggerBackend.FormatHelper do
   Formats a log event for Slack.
   """
   def format_event({level, message, module, function, file, line}) do
-    IO.puts "MESSAGE: #{message}"
     {:ok, event} = %{attachments: [%{
           fallback: "An #{level} level event has occurred: #{message}",
           pretext: message,
@@ -44,7 +43,6 @@ defmodule SlackLoggerBackend.FormatHelper do
   Formats a log event for Slack.
   """
   def format_event({level, message, application, module, function, file, line}) do
-    IO.puts "MESSAGE: #{message}"
     {:ok, event} = %{attachments: [%{
           fallback: "An #{level} level event has occurred: #{message}",
           pretext: message,
