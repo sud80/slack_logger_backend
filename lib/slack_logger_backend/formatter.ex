@@ -1,5 +1,3 @@
-alias Experimental.GenStage
-
 defmodule SlackLoggerBackend.Formatter do
 
   @moduledoc """
