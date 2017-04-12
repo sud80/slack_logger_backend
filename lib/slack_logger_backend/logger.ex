@@ -84,7 +84,7 @@ defmodule SlackLoggerBackend.Logger do
   end
 
   defp send_event(event) do
-    Producer.add_event({get_url, event})
+    Producer.add_event({get_url(), event})
   end
 
 end
