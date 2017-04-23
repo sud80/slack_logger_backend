@@ -30,7 +30,7 @@ defmodule SlackLoggerBackend.Logger do
 
   @doc false
   def handle_event({level, _pid, {_, message, _timestamp, detail}}, %{levels: []} = state) do
-    levels = case Application.get_env(SlackLoggerBackend, :levels) do
+    levels = case get_env(:levels) do
       nil ->
         @default_log_levels
       levels ->
@@ -63,7 +63,7 @@ defmodule SlackLoggerBackend.Logger do
   defp get_url do
     case System.get_env(@env_webhook) do
       nil ->
-        Application.get_env(SlackLoggerBackend, :slack)[:url]
+        get_env(:slack)[:url]
       url ->
         url
     end
@@ -85,6 +85,10 @@ defmodule SlackLoggerBackend.Logger do
 
   defp send_event(event) do
     Producer.add_event({get_url(), event})
+  end
+
+  defp get_env(key, default \\ nil) do
+    Application.get_env(SlackLoggerBackend, key) || Application.get_env(:slack_logger_backend, key) || default
   end
 
 end
