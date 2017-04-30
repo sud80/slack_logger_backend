@@ -88,7 +88,7 @@ defmodule SlackLoggerBackend.Logger do
   end
 
   defp get_env(key, default \\ nil) do
-    Application.get_env(SlackLoggerBackend, key) || Application.get_env(:slack_logger_backend, key) || default
+    Application.get_env(SlackLoggerBackend, key, Application.get_env(:slack_logger_backend, key, default))
   end
 
 end
