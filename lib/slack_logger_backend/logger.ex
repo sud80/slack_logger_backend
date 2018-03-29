@@ -88,11 +88,23 @@ defmodule SlackLoggerBackend.Logger do
   end
 
   defp send_event(event) do
-    Producer.add_event({get_url(), event})
+    case can_send_event(event) do
+      true -> Producer.add_event({get_url(), event})
+      false -> :noop
+    end
   end
 
   defp get_env(key, default \\ nil) do
     Application.get_env(SlackLoggerBackend, key, Application.get_env(:slack_logger_backend, key, default))
+  end
+
+  defp can_send_event(event) do
+    message = elem(event, 1)
+    !Enum.any?(get_ignore_regexes, fn r -> Regex.match?(r, message) end)
+  end
+
+  defp get_ignore_regexes() do
+    Application.get_env(:slack_logger_backend, :ignore_regexes, [])
   end
 
 end
