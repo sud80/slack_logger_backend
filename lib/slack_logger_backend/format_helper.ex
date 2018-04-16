@@ -10,7 +10,9 @@ defmodule SlackLoggerBackend.FormatHelper do
   Formats a log event for Slack.
   """
   def format_event({level, message, module, function, file, line}) do
-    message = truncate_message(message)
+    message = message
+    |> truncate_message()
+    |> mask_data()
     {:ok, event} = %{attachments: [%{
           fallback: "An #{level} level event has occurred: #{message}",
           pretext: message,
@@ -84,6 +86,20 @@ defmodule SlackLoggerBackend.FormatHelper do
 
   defp truncate_message(message) do
     String.slice(message, 0, 8096)
+  end
+
+  defp mask_data([message | _]) do
+    mask_data(message)
+  end
+
+  defp mask_data(message) do
+    Enum.reduce(get_mask_regexes(), message, fn x, m ->
+      Regex.replace(x, m, "<<FILTERED>>")
+    end)
+  end
+
+  defp get_mask_regexes() do
+    Application.get_env(:slack_logger_backend, :mask_regexes, [])
   end
 
 end

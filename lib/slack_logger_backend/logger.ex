@@ -100,7 +100,7 @@ defmodule SlackLoggerBackend.Logger do
 
   defp can_send_event(event) do
     message = elem(event, 1)
-    !Enum.any?(get_ignore_regexes, fn r -> Regex.match?(r, message) end)
+    !Enum.any?(get_ignore_regexes(), fn r -> Regex.match?(r, message) end)
   end
 
   defp get_ignore_regexes() do
