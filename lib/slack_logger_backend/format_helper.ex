@@ -3,9 +3,9 @@ defmodule SlackLoggerBackend.FormatHelper do
   @moduledoc """
   Simple formatter for Slack messages.
   """
-
+  @hostname SlackLoggerBackend.Util.hostname()
   import Poison, only: [encode: 1]
-
+  
   @doc """
   Formats a log event for Slack.
   """
@@ -36,6 +36,10 @@ defmodule SlackLoggerBackend.FormatHelper do
             title: "Line",
             value: line,
             short: true
+          }, %{
+            title: "Host",
+            value: @hostname,
+            short: true,
           }]
       }]}
       |> encode
@@ -74,6 +78,10 @@ defmodule SlackLoggerBackend.FormatHelper do
             title: "Line",
             value: line,
             short: true
+          }, %{
+            title: "Host",
+            value: @hostname,
+            short: true,
           }]
       }]}
       |> encode
